@@ -5,7 +5,7 @@ use dualshock_driver::DualShock4;
 #[async_std::main]
 async fn main()
 {
-    let mut ds = DualShock4::new();
+    let mut ds = DualShock4::new().unwrap();
 
     loop {
         let _ = ds.read();

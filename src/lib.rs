@@ -1,5 +1,6 @@
 extern crate hidapi;
 use hidapi::{HidApi, HidDevice, HidError};
+use colored::{Colorize, self};
 
 pub struct JoyStick
 {
@@ -38,44 +39,55 @@ pub struct DualShock4
 }
 
 impl DualShock4 {
-    pub fn new()->DualShock4
+    pub fn new()->Result<DualShock4, HidError>
     {
         let api = HidApi::new().unwrap();
 
-        let dev = api.open(1356, 2508).unwrap();
-
-        let joy = JoyStick{
-            left_x:0.0,
-            left_y:0.0,
-            right_x:0.0,
-            right_y:0.0
-        };
-
-        let pad = Dpad{
-            up_key:false,
-            down_key:false,
-            left_key:false,
-            right_key:false
-        };
-
-        let btn = Buttons{
-            circle:false,
-            cross:false,
-            triangle:false,
-            cube:false,
-            r1:false,
-            r2:false,
-            l1:false,
-            l2:false
-        };
-
-        DualShock4
+        match api.open(1356, 2508)
         {
-            device:dev,
-            sticks:joy,
-            dpad:pad,
-            btns:btn
+            Ok(dev)=>{
+                let joy = JoyStick{
+                    left_x:0.0,
+                    left_y:0.0,
+                    right_x:0.0,
+                    right_y:0.0
+                };
+        
+                let pad = Dpad{
+                    up_key:false,
+                    down_key:false,
+                    left_key:false,
+                    right_key:false
+                };
+        
+                let btn = Buttons{
+                    circle:false,
+                    cross:false,
+                    triangle:false,
+                    cube:false,
+                    r1:false,
+                    r2:false,
+                    l1:false,
+                    l2:false
+                };
+        
+                let ds = DualShock4
+                {
+                    device:dev,
+                    sticks:joy,
+                    dpad:pad,
+                    btns:btn
+                };
+
+                println!("[DualshockDriver]Open Device");
+                Ok(ds)
+            }
+            Err(e)=>{
+                println!("{}", "[DualshockDriver]:Failed to open device".red());
+                Err(e)
+            }
         }
+
     }
     pub fn read(&mut self)->Result<(), HidError>
     {
