@@ -1,6 +1,9 @@
 # dualshock-driver
 connect dualshock4 by hidapi in Rust
 
+# Build Test
+[![Rust](https://github.com/motii8128/dualshock-driver/actions/workflows/rust.yml/badge.svg)](https://github.com/motii8128/dualshock-driver/actions/workflows/rust.yml)
+
 # Before Using
 Add udev rules
 ```
