@@ -10,5 +10,7 @@ async fn main()
     loop {
         let _ = ds.read();
         println!("Stick:{{left_x:{}, left_y:{}, right_x:{}, right_y:{}}}", ds.sticks.left_x, ds.sticks.left_y, ds.sticks.right_x, ds.sticks.right_y);
+        println!("Buttons:{{circle:{}, cross:{}, triangle:{}, cube:{}, r1:{}, r2:{}, l1:{}, l2:{}}}", ds.btns.circle, ds.btns.cross, ds.btns.triangle, ds.btns.cube, ds.btns.r1, ds.btns.r2, ds.btns.l1, ds.btns.l2);
+        println!("Dpad:{{up:{}, down:{}, right:{}, left:{}}}", ds.dpad.up_key, ds.dpad.down_key, ds.dpad.right_key, ds.dpad.left_key);
     }
 }
