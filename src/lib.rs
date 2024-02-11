@@ -1,7 +1,6 @@
 extern crate hidapi;
 use hidapi::{HidApi, HidDevice, HidError};
 use colored::{Colorize, self};
-
 pub struct JoyStick
 {
     pub left_x:f32,
@@ -83,7 +82,8 @@ impl DualShock4 {
                 Ok(ds)
             }
             Err(e)=>{
-                println!("{}", "[DualshockDriver]:Failed to open device".red());
+                let msg = "[DualshockDriver]:Failed to open device".to_string();
+                println!("{}", format!("{}", msg.red()));
                 Err(e)
             }
         }
