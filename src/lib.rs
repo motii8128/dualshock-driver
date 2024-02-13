@@ -26,6 +26,8 @@ pub struct Buttons
     pub r2:bool,
     pub l1:bool,
     pub l2:bool,
+    pub left_push:bool,
+    pub right_push:bool
 }
 
 pub struct DualShock4
@@ -66,7 +68,9 @@ impl DualShock4 {
                     r1:false,
                     r2:false,
                     l1:false,
-                    l2:false
+                    l2:false,
+                    left_push:false,
+                    right_push:false,
                 };
         
                 let ds = DualShock4
@@ -139,6 +143,8 @@ fn convert(buf:&[u8])->(JoyStick, Buttons, Dpad)
             r2:false,
             l1:false,
             l2:false,
+            left_push:false,
+            right_push:false,
         };
 
         let mut dpad = Dpad{
@@ -166,6 +172,8 @@ fn convert(buf:&[u8])->(JoyStick, Buttons, Dpad)
             2=>btns.r1 = true,
             4=>btns.l2 = true,
             8=>btns.r2 = true,
+            64=>btns.left_push = true,
+            128=>btns.right_push = true,
             _=>(),
         }
         (joy, btns, dpad)
