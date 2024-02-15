@@ -91,7 +91,7 @@ impl DualShock4 {
         }
 
     }
-    pub fn read(&mut self)->Result<(), HidError>
+    pub async fn read(&mut self)->Result<(), HidError>
     {
         let mut buf = [0_u8;256];
         match self.device.read(&mut buf) {
