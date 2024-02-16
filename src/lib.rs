@@ -91,7 +91,7 @@ impl DualShock4 {
         }
 
     }
-    pub async fn read(&mut self)->Result<(), HidError>
+    pub async fn read(&mut self)
     {
         let mut buf = [0_u8;256];
         match self.device.read(&mut buf) {
@@ -104,10 +104,9 @@ impl DualShock4 {
                 self.btns = btn;
                 self.dpad = d;
 
-                Ok(())
             }
             Err(e)=>{
-                return Err(e)
+                eprintln!("{}", e);
             }
         }
     }
