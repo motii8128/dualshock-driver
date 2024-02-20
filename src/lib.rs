@@ -91,7 +91,7 @@ impl DualShock4 {
         }
 
     }
-    pub async fn read(&mut self)
+    pub fn read(&mut self)
     {
         let mut buf = [0_u8;256];
         match self.device.read(&mut buf) {
