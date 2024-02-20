@@ -30,55 +30,29 @@ pub struct Buttons
     pub right_push:bool
 }
 
-pub struct DualShock4
+pub struct DualShock4Driver
 {
     device:HidDevice,
-    pub sticks:JoyStick,
-    pub dpad:Dpad,
-    pub btns:Buttons,
 }
 
-impl DualShock4 {
-    pub fn new()->Result<DualShock4, HidError>
+pub struct DualShock4
+{
+    pub sticks:JoyStick,
+    pub btns:Buttons,
+    pub dpad:Dpad
+}
+
+impl DualShock4Driver {
+    pub fn new()->Result<DualShock4Driver, HidError>
     {
         let api = HidApi::new().unwrap();
 
         match api.open(1356, 2508)
         {
             Ok(dev)=>{
-                let joy = JoyStick{
-                    left_x:0.0,
-                    left_y:0.0,
-                    right_x:0.0,
-                    right_y:0.0
-                };
-        
-                let pad = Dpad{
-                    up_key:false,
-                    down_key:false,
-                    left_key:false,
-                    right_key:false
-                };
-        
-                let btn = Buttons{
-                    circle:false,
-                    cross:false,
-                    triangle:false,
-                    cube:false,
-                    r1:false,
-                    r2:false,
-                    l1:false,
-                    l2:false,
-                    left_push:false,
-                    right_push:false,
-                };
-        
-                let ds = DualShock4
+                let ds = DualShock4Driver
                 {
-                    device:dev,
-                    sticks:joy,
-                    dpad:pad,
-                    btns:btn
+                    device:dev
                 };
 
                 println!("[DualshockDriver]Open Device");
@@ -91,7 +65,7 @@ impl DualShock4 {
         }
 
     }
-    pub fn read(&mut self)
+    pub async fn read(&mut self)->Result<DualShock4, HidError>
     {
         let mut buf = [0_u8;256];
         match self.device.read(&mut buf) {
@@ -100,13 +74,11 @@ impl DualShock4 {
 
                 let (j, btn, d) = convert(get_data);
 
-                self.sticks = j;
-                self.btns = btn;
-                self.dpad = d;
-
+                Ok(DualShock4{sticks:j, btns:btn, dpad:d})
             }
             Err(e)=>{
                 eprintln!("{}", e);
+                Err(e)
             }
         }
     }
