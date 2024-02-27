@@ -1,5 +1,8 @@
 extern crate hidapi;
 use hidapi::{HidApi, HidDevice, HidError};
+
+pub const BLE:u8 = 50;
+pub const SERIAL:u8 = 100;
 pub struct JoyStick
 {
     pub left_x:f32,
@@ -65,14 +68,14 @@ impl DualShock4Driver {
         }
 
     }
-    pub async fn read(&mut self)->Result<DualShock4, HidError>
+    pub async fn read(&mut self, mode:u8)->Result<DualShock4, HidError>
     {
         let mut buf = [0_u8;256];
         match self.device.read(&mut buf) {
             Ok(size)=>{
                 let get_data = &buf[..size];
 
-                let (j, btn, d) = convert(get_data);
+                let (j, btn, d) = convert(get_data, mode);
 
                 Ok(DualShock4{sticks:j, btns:btn, dpad:d})
             }
@@ -97,55 +100,134 @@ fn map(value:u8,in_min:f32, in_max:f32, out_min:f32, out_max:f32)->f32
     result
 }
 
-fn convert(buf:&[u8])->(JoyStick, Buttons, Dpad)
+fn convert(buf:&[u8], mode:u8)->(JoyStick, Buttons, Dpad)
     {
-        let l_x = map(buf[1], 0.0, 255.0, -1.0, 1.0);
-        let l_y = map(buf[2], 0.0, 255.0, 1.0, -1.0);
-        let r_x = map(buf[3], 0.0, 255.0, -1.0, 1.0);
-        let r_y = map(buf[4], 0.0, 255.0, 1.0, -1.0);
+        if mode == BLE
+        {
+            let l_x = map(buf[3], 0.0, 255.0, -1.0, 1.0);
+            let l_y = map(buf[4], 0.0, 255.0, 1.0, -1.0);
+            let r_x = map(buf[5], 0.0, 255.0, -1.0, 1.0);
+            let r_y = map(buf[6], 0.0, 255.0, 1.0, -1.0);
+            let joy = JoyStick{left_x:l_x,left_y:l_y,right_x:r_x,right_y:r_y};
+            let mut btns = Buttons{
+                circle:false,
+                cross:false,
+                triangle:false,
+                cube:false,
+                r1:false,
+                r2:false,
+                l1:false,
+                l2:false,
+                left_push:false,
+                right_push:false,
+            };
 
-        let joy = JoyStick{left_x:l_x,left_y:l_y,right_x:r_x,right_y:r_y};
-        let mut btns = Buttons{
-            circle:false,
-            cross:false,
-            triangle:false,
-            cube:false,
-            r1:false,
-            r2:false,
-            l1:false,
-            l2:false,
-            left_push:false,
-            right_push:false,
-        };
+            let mut dpad = Dpad{
+                up_key:false,
+                down_key:false,
+                right_key:false,
+                left_key:false
+            };
 
-        let mut dpad = Dpad{
-            up_key:false,
-            down_key:false,
-            right_key:false,
-            left_key:false
-        };
+            match buf[7] {
+                0=>dpad.up_key = true,
+                2=>dpad.right_key = true,
+                4=>dpad.down_key = true,
+                6=>dpad.left_key = true,
+                24=>btns.cube = true,
+                40=>btns.cross = true,
+                72=>btns.circle = true,
+                136=>btns.triangle = true,
+                8=>(),
+                _=>()
+            }
 
-        match buf[5] {
-            0=>dpad.up_key = true,
-            2=>dpad.right_key = true,
-            4=>dpad.down_key = true,
-            6=>dpad.left_key = true,
-            24=>btns.cube = true,
-            40=>btns.cross = true,
-            72=>btns.circle = true,
-            136=>btns.triangle = true,
-            8=>(),
-            _=>()
+            match buf[8] {
+                1=>btns.l1 = true,
+                2=>btns.r1 = true,
+                4=>btns.l2 = true,
+                8=>btns.r2 = true,
+                64=>btns.left_push = true,
+                128=>btns.right_push = true,
+                _=>(),
+            }
+            (joy, btns, dpad)
         }
+        else if mode == SERIAL
+        {
+            let l_x = map(buf[1], 0.0, 255.0, -1.0, 1.0);
+            let l_y = map(buf[2], 0.0, 255.0, 1.0, -1.0);
+            let r_x = map(buf[3], 0.0, 255.0, -1.0, 1.0);
+            let r_y = map(buf[4], 0.0, 255.0, 1.0, -1.0);
+            let joy = JoyStick{left_x:l_x,left_y:l_y,right_x:r_x,right_y:r_y};
+            let mut btns = Buttons{
+                circle:false,
+                cross:false,
+                triangle:false,
+                cube:false,
+                r1:false,
+                r2:false,
+                l1:false,
+                l2:false,
+                left_push:false,
+                right_push:false,
+            };
 
-        match buf[6] {
-            1=>btns.l1 = true,
-            2=>btns.r1 = true,
-            4=>btns.l2 = true,
-            8=>btns.r2 = true,
-            64=>btns.left_push = true,
-            128=>btns.right_push = true,
-            _=>(),
+            let mut dpad = Dpad{
+                up_key:false,
+                down_key:false,
+                right_key:false,
+                left_key:false
+            };
+
+            match buf[5] {
+                0=>dpad.up_key = true,
+                2=>dpad.right_key = true,
+                4=>dpad.down_key = true,
+                6=>dpad.left_key = true,
+                24=>btns.cube = true,
+                40=>btns.cross = true,
+                72=>btns.circle = true,
+                136=>btns.triangle = true,
+                8=>(),
+                _=>()
+            }
+
+            match buf[6] {
+                1=>btns.l1 = true,
+                2=>btns.r1 = true,
+                4=>btns.l2 = true,
+                8=>btns.r2 = true,
+                64=>btns.left_push = true,
+                128=>btns.right_push = true,
+                _=>(),
+            }
+            (joy, btns, dpad)
         }
-        (joy, btns, dpad)
+        else {
+            println!("MODE ERROR");
+
+            let joy = JoyStick{left_x:0.0, left_y:0.0, right_x:0.0, right_y:0.0};
+            let btns = Buttons{
+                circle:false,
+                cross:false,
+                triangle:false,
+                cube:false,
+                r1:false,
+                r2:false,
+                l1:false,
+                l2:false,
+                left_push:false,
+                right_push:false,
+            };
+
+            let dpad = Dpad{
+                up_key:false,
+                down_key:false,
+                right_key:false,
+                left_key:false
+            };
+
+            (joy, btns, dpad)
+        }
     }   
