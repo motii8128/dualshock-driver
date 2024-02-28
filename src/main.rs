@@ -1,15 +1,15 @@
 use async_std;
-use dualshock_driver::DualShock4Driver;
-use dualshock_driver::BLE;
+use dualshock_driver::{DualShock4Driver, SERIAL};
 
 
 #[async_std::main]
 async fn main()
 {
-    let mut driver = DualShock4Driver::new().unwrap();
+    // Insert "BLE" or "SERIAL"
+    let mut driver = DualShock4Driver::new(SERIAL).unwrap();
 
     loop {
-        let ds4 = driver.read(BLE).await.unwrap();
+        let ds4 = driver.read().await.unwrap();
 
         println!("Stick{{left_x:{}, left_y:{}, right_x:{}, right_y:{}}}", ds4.sticks.left_x, ds4.sticks.left_y, ds4.sticks.right_x, ds4.sticks.right_y);
         println!("Buttons{{circle:{}, cross:{}, triangle:{}, cube:{}, r1:{}, r2:{}, l1:{}, l2:{}}}", 

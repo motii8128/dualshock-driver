@@ -36,6 +36,7 @@ pub struct Buttons
 pub struct DualShock4Driver
 {
     device:HidDevice,
+    mode:u8,
 }
 
 pub struct DualShock4
@@ -46,7 +47,7 @@ pub struct DualShock4
 }
 
 impl DualShock4Driver {
-    pub fn new()->Result<DualShock4Driver, HidError>
+    pub fn new(mode:u8)->Result<DualShock4Driver, HidError>
     {
         let api = HidApi::new().unwrap();
 
@@ -55,7 +56,8 @@ impl DualShock4Driver {
             Ok(dev)=>{
                 let ds = DualShock4Driver
                 {
-                    device:dev
+                    device:dev,
+                    mode:mode
                 };
 
                 println!("[DualshockDriver]Open Device");
@@ -68,14 +70,15 @@ impl DualShock4Driver {
         }
 
     }
-    pub async fn read(&mut self, mode:u8)->Result<DualShock4, HidError>
+    pub async fn read(&mut self)->Result<DualShock4, HidError>
     {
         let mut buf = [0_u8;256];
         match self.device.read(&mut buf) {
             Ok(size)=>{
                 let get_data = &buf[..size];
+                println!("{:?}", get_data);
 
-                let (j, btn, d) = convert(get_data, mode);
+                let (j, btn, d) = convert(get_data, self.mode);
 
                 Ok(DualShock4{sticks:j, btns:btn, dpad:d})
             }
@@ -182,13 +185,23 @@ fn convert(buf:&[u8], mode:u8)->(JoyStick, Buttons, Dpad)
 
             match buf[5] {
                 0=>dpad.up_key = true,
+                1=>{dpad.up_key = true;dpad.right_key = true},
                 2=>dpad.right_key = true,
+                3=>{dpad.right_key = true;dpad.down_key = true},
                 4=>dpad.down_key = true,
+                5=>{dpad.left_key=true;dpad.down_key=true},
                 6=>dpad.left_key = true,
+                7=>{dpad.left_key=true;dpad.up_key=true},
                 24=>btns.cube = true,
                 40=>btns.cross = true,
+                56=>{btns.cube=true;btns.cross=true},
                 72=>btns.circle = true,
+                88=>{btns.circle = true;btns.cube=true},
+                104=>{btns.circle=true;btns.cross=true},
                 136=>btns.triangle = true,
+                152=>{btns.cube=true;btns.triangle=true},
+                168=>{btns.triangle=true;btns.cross=true},
+                200=>{btns.triangle=true;btns.circle=true},
                 8=>(),
                 _=>()
             }
