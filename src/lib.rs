@@ -76,7 +76,7 @@ impl DualShock4Driver {
         match self.device.read(&mut buf) {
             Ok(size)=>{
                 let get_data = &buf[..size];
-                println!("{:?}", get_data);
+                // println!("{:?}", get_data);
 
                 let (j, btn, d) = convert(get_data, self.mode);
 
